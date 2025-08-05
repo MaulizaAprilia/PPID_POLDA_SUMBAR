@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Menu, X, Phone, Mail, User } from 'lucide-react'
 import { Button } from "../components/ui/button"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 interface HeaderProps {
   onLoginClick?: () => void
@@ -10,14 +11,31 @@ interface HeaderProps {
 
 export default function Header({ onLoginClick, isLoggedIn, onLogout }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+  const handleNavigation = (sectionId: string) => {
+    if (location.pathname === "/") {
+      // Jika sudah di landing page
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" })
+      }
+    } else {
+      // Kalau bukan di halaman utama, redirect ke halaman utama dan simpan lokasi
+      navigate(`/?scrollTo=${sectionId}`)
     }
     setIsMenuOpen(false)
   }
+
+  const navItems = [
+    { label: "Beranda", section: "beranda" },
+    { label: "Berita", section: "berita" },
+    { label: "Layanan", section: "layanan" },
+    { label: "Informasi Publik", section: "informasi" },
+    { label: "Permohonan", section: "permohonan" },
+    { label: "Kontak", section: "kontak" },
+  ]
 
   return (
     <>
@@ -45,54 +63,26 @@ export default function Header({ onLoginClick, isLoggedIn, onLogout }: HeaderPro
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
-            <div className="flex items-center space-x-4">
+            <Link to="/" className="flex items-center space-x-4">
               <img src="/logo_polda.png" alt="Logo Polri" className="h-16 w-13" />
               <div>
                 <h1 className="text-xl font-bold text-blue-900">PPID POLDA SUMBAR</h1>
                 <p className="text-sm text-gray-600">Pejabat Pengelola Informasi dan Dokumentasi</p>
               </div>
-            </div>
+            </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center space-x-8">
-              <button
-                onClick={() => scrollToSection("beranda")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Beranda
-              </button>
-              <button
-                onClick={() => scrollToSection("berita")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Berita
-              </button>
-              <button
-                onClick={() => scrollToSection("layanan")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Layanan
-              </button>
-              <button
-                onClick={() => scrollToSection("informasi")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Informasi Publik
-              </button>
-              <button
-                onClick={() => scrollToSection("permohonan")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Permohonan
-              </button>
-              <button
-                onClick={() => scrollToSection("kontak")}
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Kontak
-              </button>
-              
-              {/* Auth Buttons */}
+              {navItems.map((item) => (
+                <button
+                  key={item.section}
+                  onClick={() => handleNavigation(item.section)}
+                  className="text-gray-700 hover:text-blue-600 font-medium"
+                >
+                  {item.label}
+                </button>
+              ))}
+
               {isLoggedIn ? (
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" size="sm">
@@ -111,49 +101,27 @@ export default function Header({ onLoginClick, isLoggedIn, onLogout }: HeaderPro
               )}
             </nav>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu */}
             <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Nav */}
           {isMenuOpen && (
             <div className="lg:hidden py-4 border-t">
               <nav className="flex flex-col space-y-4">
-                <button
-                  onClick={() => scrollToSection("beranda")}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-left"
-                >
-                  Beranda
-                </button>
-                <button
-                  onClick={() => scrollToSection("layanan")}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-left"
-                >
-                  Layanan
-                </button>
-                <button
-                  onClick={() => scrollToSection("informasi")}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-left"
-                >
-                  Informasi Publik
-                </button>
-                <button
-                  onClick={() => scrollToSection("permohonan")}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-left"
-                >
-                  Permohonan
-                </button>
-                <button
-                  onClick={() => scrollToSection("kontak")}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-left"
-                >
-                  Kontak
-                </button>
-                
+                {navItems.map((item) => (
+                  <button
+                    key={item.section}
+                    onClick={() => handleNavigation(item.section)}
+                    className="text-gray-700 hover:text-blue-600 font-medium text-left"
+                  >
+                    {item.label}
+                  </button>
+                ))}
                 {isLoggedIn ? (
-                  <div className="flex flex-col space-y-2">
+                  <>
                     <Button variant="outline" size="sm" className="w-fit">
                       <User className="w-4 h-4 mr-2" />
                       Admin
@@ -161,7 +129,7 @@ export default function Header({ onLoginClick, isLoggedIn, onLogout }: HeaderPro
                     <Button variant="outline" size="sm" className="w-fit" onClick={onLogout}>
                       Logout
                     </Button>
-                  </div>
+                  </>
                 ) : (
                   <Button className="bg-blue-600 hover:bg-blue-700 w-fit" onClick={onLoginClick}>
                     <User className="w-4 h-4 mr-2" />
